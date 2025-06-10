@@ -58,10 +58,10 @@ class FeatureExtractor:
         # Initialize Ctrlo
         config_path = CHECKPOINTS[
             "config"
-        ]  # "/home/mila/a/aniket.didolkar/scratch/lang_oclf_github/language_conditioned_oclf/outputs/projects/prompting/vg/prompt_vg_small14_dinov2_mapping_lang_point_pred_sep/2024-10-10_15-05-41/config/config.yaml"
+        ]  
         encoder_checkpoint_path = CHECKPOINTS[
             "checkpoint"
-        ]  # "/home/mila/a/aniket.didolkar/scratch/lang_oclf_github/language_conditioned_oclf/outputs/projects/prompting/vg/prompt_vg_small14_dinov2_mapping_lang_point_pred_sep/2024-10-10_15-05-41/checkpoints/epoch=0-step=243000.ckpt"
+        ]
         oclf_config = OmegaConf.load(config_path)
         self.model = train.build_model_from_config(
             oclf_config, encoder_checkpoint_path

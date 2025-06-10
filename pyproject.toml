@@ -1,18 +1,33 @@
+# -----------------------------------------------------------------------------
+# This project is a fork of:
+#   Object Centric Learning Framework (OCLF)
+#   https://github.com/amazon-science/object-centric-learning-framework
+#
+# Original authors:
+#   Max Horn, Maximilian Seitzer, Andrii Zadaianchuk, Zixu Zhao,
+#   Dominik Zietlow, Florian Wenzel, Tianjun Xiao
+#
+# License: Apache-2.0
+#
+# This fork (CTRL-O) introduces language-based control for object-centric
+# representation learning, enabling specific object targeting and multimodal
+# applications, and achieves strong results on downstream tasks such as
+# text-to-image generation and visual question answering.
+# -----------------------------------------------------------------------------
+
 [tool.poetry]
-name = "ocl"
+name = "ctrl-o"
 version = "0.1.0"
-description = ""
+description = "Object-centric representation learning with language-based control for specific object targeting and multimodal applications."
 authors = [
-  "Max Horn <hornmax@amazon.de>",
+  "Aniket Rajiv Didolkar <aniket.didolkar@mila.quebec>",
+  "Andrii Zadaianchuk <andrii.zadaianchuk@uva.nl>",
+  "Rabiul Awal <rabiul.awal@mila.quebec>",
   "Maximilian Seitzer <maximilian.seitzer@tuebingen.mpg.de>",
-  "Andrii Zadaianchuk <andrii.zadaianchuk@tuebingen.mpg.de>",
-  "Zixu Zhao <zhaozixu@amazon.com>",
-  "Dominik Zietlow <zietld@amazon.de>",
-  "Florian Wenzel <flwenzel@amazon.de>",
-  "Tianjun Xiao <tianjux@amazon.com>"
+  "Efstratios Gavves <e.gavves@uva.nl>",
+  "Aishwarya Agrawal <aishwarya.agrawal@mila.quebec>"
 ]
-license = "Apache-2.0"
-repository = "https://github.com/amazon-science/object-centric-learning-framework"
+repository = "https://github.com/dido1998/CTRL-O"
 readme = "README.md"
 include = ["configs/"]
 packages = [
@@ -68,7 +83,8 @@ notebook = {version = "^7.0.6", optional=true}
 opencv-python = "^4.10.0.84"
 wandb = "^0.17.5"
 requests = "^2.32.3"
-huggingface-hub = "^0.24.7"
+huggingface-hub = "^0.32.4"
+llm2vec = "0.2.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.1.0"
