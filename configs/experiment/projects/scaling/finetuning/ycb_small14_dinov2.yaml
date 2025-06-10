@@ -1,0 +1,9 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder.
+defaults:
+  - /experiment/projects/scaling/ycb_small14_dinov2
+  - /experiment/projects/scaling/finetuning/_finetuning
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true

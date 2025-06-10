@@ -1,0 +1,126 @@
+# @package _global_
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+
+experiment:
+  max_num_binds: 7
+  target_checkpoint_path: /network/scratch/a/aniket.didolkar/oclf/object-centric-learning-framework/coco_models/ft_dinosaurv2_gen_opt_hps/seed0/checkpoints/epoch=0-step=274000.ckpt
+
+
+  callbacks:
+    weight_init_feature_extractor:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.target_checkpoint_path}
+      target_path: models.feature_extractor
+      source_path: models.feature_extractor
+    weight_init_percetual_grouping:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.target_checkpoint_path}
+      target_path: models.perceptual_grouping
+      source_path: models.perceptual_grouping
+    weight_init_object_decoder:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.target_checkpoint_path}
+      target_path: models.object_decoder
+      source_path: models.object_decoder
+
+
+models:
+  conditioning:
+    _target_: routed.ocl.conditioning.DualConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    dual_conditioning: false
+    name_embedding_path: input.name_embedding
+    point_embedding_path: input.bbox_centroids
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  category_head:
+    _target_: routed.ocl.heads.CategoryPredictionHead
+    dim: ${experiment.feature_dim}
+    num_classes: 172
+    attn_path: perceptual_grouping.feature_attributions
+    x_path: feature_extractor.features
+
+  point_head:
+    _target_: routed.ocl.heads.PointPredictionHead
+    dim: ${experiment.feature_dim}
+    attn_path: perceptual_grouping.feature_attributions
+    x_path: feature_extractor.features
+
+losses:
+  point_prediction:
+    _target_: routed.ocl.losses.PointPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    point_preds_path: point_head
+    target_path: input.bbox_centroids
+    control_mask_path: input.selected_indices
+  category_prediction:
+    _target_: routed.ocl.losses.CategoryPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    category_preds_path: category_head
+    target_path: input.category_idx
+    control_mask_path: input.selected_indices
+
+evaluation_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices
+  binding_hits:
+    _target_: routed.ocl.metrics.BindingHits
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask_v2
+    selected_indices_path: input.selected_indices
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: false
+  gt_matched_instance_mbo:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask_v2
+    selected_indices_path: input.selected_indices
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: true
+
+training_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  bbox_mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.AdamW
+      _partial_: true
+    parameter_groups:
+      _target_: ocl.optimization.ParameterGroupCreator
+      param_groups:
+        grouping:
+          params: [models.perceptual_grouping,
+                    models.conditioning,
+                    models.object_decoder,
+                    models.category_head,
+                    models.point_head]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0

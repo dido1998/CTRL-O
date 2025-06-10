@@ -1,0 +1,18 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and without MLP in front of Slot Attention.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/_finetuning
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true
+
+  perceptual_grouping:
+    positional_embedding:
+      _target_: ocl.neural_networks.wrappers.Sequential
+      _args_:
+        - _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+        - _target_: torch.nn.Linear
+          in_features: ${experiment.feature_dim}
+          out_features: ${....feature_dim}

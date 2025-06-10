@@ -1,0 +1,70 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/scaling/_base_controllable_dinosaur
+  - /dataset: coco
+  - /experiment/projects/scaling/_preprocessing_coco_control
+  - /experiment/projects/scaling/_metrics_lang
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_small_patch14_dinov2.lvd142m
+
+models:
+  feature_extractor:
+    dynamic_img_size: true
+
+  object_decoder:
+    _target_: routed.ocl.decoding.ControllablePatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    object_dim: ${experiment.slot_dim}
+    output_dim: ${experiment.feature_dim}
+    num_patches: ${experiment.num_patches}
+    lang_object_features_path: perceptual_grouping.lang_objects
+    image_path: input.image
+
+losses:
+  lang_mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.lang_reconstruction
+    target_path: feature_extractor.features
+
+visualizations:
+  input:
+    _target_: routed.ocl.visualizations.Image
+    n_instances: 16
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+  masks:
+    _target_: routed.ocl.visualizations.Mask
+    mask_path: object_decoder.lang_masks_as_image
+  pred_segmentation:
+    _target_: routed.ocl.visualizations.Segmentation
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.lang_masks_as_image
+  pred_segmentation_with_test:
+    _target_: routed.ocl.visualizations.SegmentationWithText
+    n_instances: 16
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.lang_masks_as_image
+    gt_masks_path: input.instance_mask_v2
+    selected_indices_path: input.selected_indices
+    text_path: input.name
+    bbox_centroids_path: input.all_bbox_centroids

@@ -1,0 +1,17 @@
+# @package _global_
+# Add post-SA slot bottleneck.
+experiment:
+  bottleneck_num_layers: 0
+  bottleneck_dims: "${mul: ${models.perceptual_grouping.object_dim}, 4}"
+
+models:
+  bottleneck:
+    _target_: routed.ocl.neural_networks.MLP
+    input_dim: ${models.perceptual_grouping.object_dim}
+    output_dim: ${experiment.slot_dim}
+    features: "${eval_lambda: 'lambda a, b: [a] * b', ${experiment.bottleneck_dims}, ${experiment.bottleneck_num_layers}}"
+    initial_layer_norm: true
+    input_path: perceptual_grouping.objects
+
+  object_decoder:
+    object_features_path: bottleneck

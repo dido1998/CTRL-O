@@ -1,0 +1,6 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, using Transformer decoder.
+defaults:
+  - /experiment/projects/scaling/finetuning/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/decoders/transformer
+  - /experiment/projects/scaling/finetuning/opt_hps/_settings

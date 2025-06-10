@@ -1,0 +1,17 @@
+# @package _global_
+# Change to transformer decoder
+models:
+  object_decoder:
+    _target_: routed.ocl.decoding.AutoregressivePatchDecoder
+    decoder_cond_dim: ${.output_dim}
+    use_input_transform: true
+    use_decoder_masks: true
+    decoder:
+      _target_: ocl.neural_networks.build_transformer_decoder
+      _partial_: true
+      n_layers: 4
+      n_heads: 6
+      return_attention_weights: true
+    masks_path: perceptual_grouping.feature_attributions
+    object_features_path: perceptual_grouping.objects
+    target_path: target_feature_extractor.features

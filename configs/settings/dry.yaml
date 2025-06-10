@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - _self_
+  - override /hydra/hydra_logging: none
+  - override /hydra/job_logging: none
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: .
+  sweep:
+    dir: .
+  output_subdir: null
+
+trainer:
+  default_root_dir: null
+  enable_checkpointing: false
+  logger: false

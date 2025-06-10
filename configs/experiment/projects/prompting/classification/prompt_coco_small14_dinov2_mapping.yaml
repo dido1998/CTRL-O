@@ -1,0 +1,201 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/prompting/_base_prompting_dinosaur
+  - /dataset: coco
+  - /experiment/projects/prompting/_preprocessing_control
+  - /experiment/projects/prompting/_metrics
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_small_patch14_dinov2.lvd142m
+  mapping_lr: "${mul: 0.1, ${.total_lr}}"
+
+models:
+  feature_extractor:
+    dynamic_img_size: true
+
+  mapping:
+    _target_: routed.ocl.mapping.MLPMapping
+    dim: ${experiment.feature_dim}
+    x_path: feature_extractor
+
+  prompt_encoder:
+    _target_: routed.ocl.prompt_encoder.PromptEncoder
+    embed_dim: ${experiment.slot_dim}
+    image_embedding_size: ${experiment.feature_dim}
+    input_image_size: ${experiment.image_size}
+    points_path: input.bbox_centroids
+
+
+  conditioning:
+    _target_: routed.ocl.conditioning.DualConditioningPE
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    dual_conditioning: false
+    name_embedding_path: input.name_embedding
+    point_embedding_path: prompt_encoder
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  perceptual_grouping:
+    _target_: routed.ocl.perceptual_grouping.SlotAttentionGrouping
+    feature_dim: ${.object_dim}
+    object_dim: ${experiment.slot_dim}
+    use_projection_bias: false
+    positional_embedding:
+      _target_: ocl.neural_networks.wrappers.Sequential
+      _args_:
+        - _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+        - _target_: ocl.neural_networks.build_two_layer_mlp
+          input_dim: ${experiment.feature_dim}
+          output_dim: ${....feature_dim}
+          hidden_dim: "${mul: ${experiment.feature_dim}, 2}"
+          initial_layer_norm: true
+    ff_mlp:
+      _target_: ocl.neural_networks.build_two_layer_mlp
+      input_dim: ${..object_dim}
+      output_dim: ${..object_dim}
+      hidden_dim: "${mul: ${..object_dim}, 4}"
+      initial_layer_norm: true
+      residual: true
+    feature_path: mapping
+    conditioning_path: conditioning
+
+  category_head:
+    _target_: routed.ocl.heads.CategoryPredictionHead
+    dim: ${experiment.feature_dim}
+    num_classes: 172
+    attn_path: perceptual_grouping.feature_attributions
+    x_path: mapping.features
+
+  point_head:
+    _target_: routed.ocl.heads.PointPredictionHead
+    dim: ${experiment.feature_dim}
+    attn_path: perceptual_grouping.feature_attributions
+    x_path: mapping.features
+
+  dec_conditioning:
+    _target_: routed.ocl.decoder_conditioning.EncodeDualConditioningPE
+    dim: ${experiment.slot_dim}
+    language_path: input.name_embedding
+    point_path: prompt_encoder
+    mask_path: input.contrastive_loss_mask
+
+  object_decoder:
+    _target_: routed.ocl.decoding.PatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    object_dim: ${experiment.slot_dim}
+    output_dim: ${experiment.feature_dim}
+    num_patches: ${experiment.num_patches}
+    object_features_path: perceptual_grouping.objects
+    image_path: input.image
+    conditioned: true
+    condition_info_path: dec_conditioning
+
+
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.AdamW
+      _partial_: true
+    parameter_groups:
+      _target_: ocl.optimization.ParameterGroupCreator
+      param_groups:
+        grouping:
+          params: [models.perceptual_grouping, models.conditioning, models.object_decoder, models.point_head, models.category_head, models.dec_conditioning]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0
+        encoder:
+          params: [models.mapping]
+          lr: ${experiment.mapping_lr}
+          weight_decay: 0.0
+
+losses:
+  mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.reconstruction
+    target_path: feature_extractor.features
+  point_prediction:
+    _target_: routed.ocl.losses.PointPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    point_preds_path: point_head
+    target_path: input.bbox_centroids
+    control_mask_path: input.selected_indices
+  category_prediction:
+    _target_: routed.ocl.losses.CategoryPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    category_preds_path: category_head
+    target_path: input.category_idx
+    control_mask_path: input.selected_indices
+
+evaluation_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  bbox_mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices
+
+training_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  bbox_mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices
+
+
+visualizations:
+  input:
+    _target_: routed.ocl.visualizations.Image
+    n_instances: 32
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+  masks:
+    _target_: routed.ocl.visualizations.Mask
+    mask_path: object_decoder.masks_as_image
+  pred_segmentation:
+    _target_: routed.ocl.visualizations.Segmentation
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.masks_as_image
+  pred_segmentation_with_text:
+    _target_: routed.ocl.visualizations.SegmentationWithText
+    n_instances: 32
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.masks_as_image
+    gt_masks_path: input.instance_mask_v2
+    selected_indices_path: input.selected_indices
+    text_path: input.name
+    bbox_centroids_path: input.all_bbox_centroids

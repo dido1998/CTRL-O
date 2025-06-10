@@ -1,0 +1,98 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/scaling/_base_controllable_dinosaur
+  - /dataset: coco
+  - /experiment/projects/scaling/_preprocessing_coco_control
+  - /experiment/projects/scaling/_metrics_coco
+  - /experiment/projects/scaling/_metrics_lang
+  - /experiment/projects/scaling/_metrics_point
+  - /experiment/projects/scaling/_metrics_diagnosis
+  - /experiment/projects/scaling/_opt/mapping
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_small_patch14_dinov2.lvd142m
+
+models:
+  feature_extractor:
+    dynamic_img_size: true
+
+  conditioning:
+    _target_: routed.ocl.conditioning.RandomConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    batch_size_path: input.batch_size
+
+  lang_conditioning:
+    _target_: routed.ocl.conditioning.LangConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    name_embedding_path: input.name_embedding
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  point_conditioning:
+    _target_: routed.ocl.conditioning.PointConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    point_embedding_path: input.bbox_centroids
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  perceptual_grouping:
+    _target_: routed.ocl.perceptual_grouping.ControllableSlotAttentionGrouping
+    feature_dim: ${.object_dim}
+    object_dim: ${experiment.slot_dim}
+    use_projection_bias: false
+    positional_embedding:
+      _target_: ocl.neural_networks.wrappers.Sequential
+      _args_:
+        - _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+        - _target_: ocl.neural_networks.build_two_layer_mlp
+          input_dim: ${experiment.feature_dim}
+          output_dim: ${....feature_dim}
+          hidden_dim: "${mul: ${experiment.feature_dim}, 2}"
+          initial_layer_norm: true
+    ff_mlp:
+      _target_: ocl.neural_networks.build_two_layer_mlp
+      input_dim: ${..object_dim}
+      output_dim: ${..object_dim}
+      hidden_dim: "${mul: ${..object_dim}, 4}"
+      initial_layer_norm: true
+      residual: true
+    language_info: true
+    point_info: true
+    feature_path: mapping
+    conditioning_path: conditioning
+    lang_conditioning_path: lang_conditioning
+    point_conditioning_path: point_conditioning
+
+  object_decoder:
+    _target_: routed.ocl.decoding.ControllablePatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    object_dim: ${experiment.slot_dim}
+    output_dim: ${experiment.feature_dim}
+    num_patches: ${experiment.num_patches}
+    object_features_path: perceptual_grouping.objects
+    lang_object_features_path: perceptual_grouping.lang_objects
+    point_object_features_path: perceptual_grouping.point_objects
+    image_path: input.image
+
+losses:
+  lang_mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.lang_reconstruction
+    target_path: feature_extractor.features
+
+  point_mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.point_reconstruction
+    target_path: feature_extractor.features

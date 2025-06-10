@@ -1,0 +1,9 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 initializing from a pre-trained checkpoint.
+defaults:
+  - /experiment/projects/scaling/finetuning/opt_hps/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/init_feature_extractor
+  - /experiment/projects/scaling/_model/init_slot_attention_head
+
+experiment:
+  sa_head_checkpoint_path: ${experiment.feature_extractor_checkpoint_path}

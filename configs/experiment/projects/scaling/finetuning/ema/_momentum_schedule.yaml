@@ -1,0 +1,16 @@
+# @package _global_
+# Add a schedule on the momentum parameter.
+experiment:
+  callbacks:
+    update_hps:
+      _target_: ocl.callbacks.UpdateHyperparameterScheduling
+    ema:
+      momentum:
+        _target_: ocl.scheduling.CosineAnnealingHPScheduler
+        start_value: 1.0
+        warmup_value: 0.999
+        end_value: 1.0
+        start_step: 0
+        warmup_steps: ${optimizers.opt0.lr_scheduler.warmup_steps}
+        end_step: ${trainer.max_steps}
+        warmup_type: cosine

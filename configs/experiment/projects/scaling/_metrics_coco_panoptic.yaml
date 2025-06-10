@@ -1,0 +1,24 @@
+# @package _global_
+evaluation_metrics:
+  panoptic_ari_min2:
+    _target_: routed.ocl.metrics.ARIMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.panoptic_mask
+    foreground: false
+    convert_target_one_hot: true
+    min_true_classes: 2
+  panoptic_quality:
+    _target_: routed.ocl.metrics.PanopticQuality
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.panoptic_mask
+    ignore_path: input.panoptic_ignore_mask
+  panoptic_segm_quality:
+    _target_: routed.ocl.metrics.PanopticSegmentationQuality
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.panoptic_mask
+    ignore_path: input.panoptic_ignore_mask
+  panoptic_recog_quality:
+    _target_: routed.ocl.metrics.PanopticRecognitionQuality
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.panoptic_mask
+    ignore_path: input.panoptic_ignore_mask

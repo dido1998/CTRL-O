@@ -1,0 +1,14 @@
+# @package _global_
+# Initialize target feature extractor from checkpoint file.
+# Checkpoint path is supposed to be added in downstream configs.
+experiment:
+  target_feature_extractor_checkpoint_path: ${oc.select:experiment.feature_extractor_checkpoint_path,???}
+  target_feature_extractor_target_postfix: ${oc.select:experiment.feature_extractor_target_postfix,???}
+  target_feature_extractor_source_postfix: ${oc.select:experiment.feature_extractor_source_postfix,???}
+
+  callbacks:
+    weight_init_target:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.target_feature_extractor_checkpoint_path}
+      target_path: models.target_feature_extractor${oc.select:experiment.target_feature_extractor_target_postfix,""}
+      source_path: models.feature_extractor${oc.select:experiment.target_feature_extractor_source_postfix,""}

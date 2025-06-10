@@ -1,0 +1,9 @@
+# @package _global_
+# Switch slot attention to inverted transformer design, i.e. unshare weights and use residual update
+models:
+  perceptual_grouping:
+    n_blocks: 3
+    iters: 1
+    use_gru: false
+    ff_mlp:
+      _partial_: true

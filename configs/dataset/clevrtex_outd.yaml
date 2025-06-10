@@ -1,0 +1,5 @@
+# The ClevrTex dataset, outd (out-of-distribution) variant
+_target_: ocl.datasets.WebdatasetDataModule
+val_shards: "${oc.env:DATASET_PREFIX}/clevrtex/outd/shard-{000000..000011}.tar"
+val_size: 10000
+use_autopadding: true

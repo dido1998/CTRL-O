@@ -1,0 +1,9 @@
+# The coco2017 dataset with instance, stuff and caption annotations.
+_target_: ocl.datasets.WebdatasetDataModule
+train_shards: "${oc.env:DATASET_PREFIX}/coco2017/train/shard-{000001..000346}.tar"
+train_size: 118287
+val_shards: "${oc.env:DATASET_PREFIX}/coco2017/train/shard-{000001..000014}.tar"
+val_size: 5000
+test_shards: "${oc.env:DATASET_PREFIX}/coco2017/test/shard-{000000..000028}.tar"
+test_size: 40670
+use_autopadding: true

@@ -1,0 +1,6 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, using SlotMixer decoder.
+defaults:
+  - /experiment/projects/scaling/finetuning/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/decoders/slot_mixer
+  - /experiment/projects/scaling/finetuning/opt_hps/_settings

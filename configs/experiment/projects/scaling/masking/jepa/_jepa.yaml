@@ -1,0 +1,30 @@
+# @package _global_
+# Add a MAE decoder to the features, trained to reconstruct the original features in a JEPA-like fashion.
+# Needs to be combined with a target_feature_extractor.
+
+models:
+  jepa_decoder:
+    _target_: routed.ocl.decoding.MAEDecoder
+    feature_dim: ${experiment.feature_dim}
+    output_dim: ${experiment.feature_dim}
+    decoder_dim: 384
+    num_patches: ${experiment.num_patches}
+    decoder:
+      _target_: ocl.neural_networks.build_transformer_encoder
+      input_dim: ${..decoder_dim}
+      output_dim: ${..decoder_dim}
+      n_layers: 4
+      n_heads: 6
+      use_output_transform: false
+    features_path: feature_extractor.features
+    mask_indices_restore_path: feature_extractor.aux_features.mask_indices_restore
+
+losses:
+  mse_jepa:
+    _target_: routed.ocl.losses.MAELoss
+    weight: 1.0
+    normalize_target: false
+    patchify_target: false
+    input_path: jepa_decoder.reconstruction
+    target_path: target_feature_extractor.features
+    masks_path: feature_extractor.aux_features.mask

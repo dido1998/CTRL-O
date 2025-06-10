@@ -1,0 +1,44 @@
+# @package _global_
+
+# Example showing how to use EMA update capabilities.
+#
+# Based on experiment/projects/bridging/dinosaur/coco_feat_rec_dino_base16.yaml
+
+defaults:
+  - /experiment/projects/bridging/dinosaur/coco_feat_rec_dino_base16
+  - _self_
+
+experiment:
+  callbacks:
+    ema:
+      _target_: ocl.callbacks.EMAUpdater
+    update_hps:
+      _target_: ocl.callbacks.UpdateHyperparameterScheduling
+
+models:
+  feature_extractor:
+    freeze: false
+
+  target_feature_extractor:
+    _target_: ocl.utils.ema.EMA
+    update_from: models.feature_extractor
+    momentum:
+      _target_: ocl.scheduling.LinearHPScheduler
+      start_value: 0.996
+      end_value: 1.0
+      start_step: 0
+      end_step: ${trainer.max_steps}
+    module:
+      _target_: routed.ocl.feature_extractors.TimmFeatureExtractor
+      model_name: vit_base_patch16_224_dino
+      pretrained: false
+      freeze: true
+      feature_level: 12
+      video_path: input.image
+
+losses:
+  mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.reconstruction
+    target_path: target_feature_extractor.features

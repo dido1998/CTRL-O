@@ -1,0 +1,19 @@
+# @package _global_
+# Change to slot mixer decoder
+models:
+  object_decoder:
+    _target_: routed.ocl.decoding.SlotMixerDecoder
+    embed_dim: ${.object_dim}
+    use_layer_norms: true
+    allocator:
+      _target_: ocl.neural_networks.extensions.TransformerEncoder
+      dim: ${..object_dim}
+      memory_dim: ${..object_dim}
+      n_blocks: 3
+      n_heads: 4
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    masks_path: perceptual_grouping.feature_attributions
+    object_features_path: perceptual_grouping.objects

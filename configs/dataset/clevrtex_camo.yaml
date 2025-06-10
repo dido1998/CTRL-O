@@ -1,0 +1,9 @@
+# The ClevrTex dataset, camo variant
+_target_: ocl.datasets.WebdatasetDataModule
+train_shards: "${oc.env:DATASET_PREFIX}/clevrtex/camo_train/shard-{000000..000017}.tar"
+train_size: 16000
+val_shards: "${oc.env:DATASET_PREFIX}/clevrtex/camo_val/shard-{000000..000002}.tar"
+val_size: 2000
+test_shards: "${oc.env:DATASET_PREFIX}/clevrtex/camo_test/shard-{000000..000002}.tar"
+test_size: 2000
+use_autopadding: true

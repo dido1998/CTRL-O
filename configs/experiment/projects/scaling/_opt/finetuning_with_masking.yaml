@@ -1,0 +1,28 @@
+# @package _global_
+# Change finetuning settings to masked encoder.
+defaults:
+  - /experiment/projects/scaling/_opt/finetuning
+
+optimizers:
+  opt0:
+    parameter_groups:
+      param_groups:
+        encoder:
+          params:
+          - [models.feature_extractor.model.vit.patch_embed,
+             models.feature_extractor.model.vit.cls_token,
+             models.feature_extractor.model.vit.reg_token,
+             models.feature_extractor.model.vit.pos_embed,
+             models.feature_extractor.model.vit.norm_pre,
+             models.feature_extractor.model.vit.blocks.0]
+          - models.feature_extractor.model.vit.blocks.1
+          - models.feature_extractor.model.vit.blocks.2
+          - models.feature_extractor.model.vit.blocks.3
+          - models.feature_extractor.model.vit.blocks.4
+          - models.feature_extractor.model.vit.blocks.5
+          - models.feature_extractor.model.vit.blocks.6
+          - models.feature_extractor.model.vit.blocks.7
+          - models.feature_extractor.model.vit.blocks.8
+          - models.feature_extractor.model.vit.blocks.9
+          - models.feature_extractor.model.vit.blocks.10
+          - [models.feature_extractor.model.vit.blocks.11, models.feature_extractor.model.vit.norm]

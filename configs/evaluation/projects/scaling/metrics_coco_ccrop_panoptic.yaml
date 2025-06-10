@@ -1,0 +1,24 @@
+# @package _global_
+# Evaluate center crop masks on COCO, with instance and panoptic metrics.
+#
+# Requires instance and panoptic masks in the dataset.
+
+defaults:
+  - /evaluation_config
+  - /evaluation/projects/bridging/_base_metrics
+  - /evaluation/projects/scaling/_preprocessing_coco
+  - /evaluation/projects/scaling/_preprocessing_coco_panoptic
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_masks
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_image
+  - /evaluation/projects/scaling/_metrics_discovery_masks
+  - /evaluation/projects/scaling/_metrics_segmentation
+  - /evaluation/projects/scaling/_metrics_panoptic
+  - /evaluation/projects/scaling/_metrics_slot_diagnosis
+  - /dataset: coco
+  - _self_
+
+eval_batch_size: 16
+
+experiment:
+  image_size: 224
+  mask_size: 320

@@ -1,0 +1,33 @@
+# @package _global_
+# Additional metrics useful for diagnosis during finetuning.
+training_metrics:
+  feature_batch_norm:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: batch_norm_normed
+    num_batch_dimensions: 2
+    tensor_path: feature_extractor.features
+  feature_batch_var:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: batch_variance
+    num_batch_dimensions: 2
+    tensor_path: feature_extractor.features
+  feature_batch_covariance_squared_offdiag:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: batch_covariance_squared_offdiag
+    num_batch_dimensions: 2
+    tensor_path: feature_extractor.features
+  feature_target_mse:
+    _target_: routed.ocl.metrics.TwoTensorStatistic
+    reduction: mse
+    tensor1_path: feature_extractor.features
+    tensor2_path: target_feature_extractor.features
+  feature_rankme:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: matrix_rank_soft
+    num_batch_dimensions: 2
+    tensor_path: feature_extractor.features
+  slot_rankme:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: matrix_rank_soft
+    num_batch_dimensions: 2
+    tensor_path: perceptual_grouping.objects

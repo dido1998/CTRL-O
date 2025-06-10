@@ -1,0 +1,41 @@
+# @package _global_
+# Evaluate center crop masks on COCO, running the decoder at 37x37 patches (corresponding to
+# 518x518 resolution).
+
+defaults:
+  - /evaluation_config
+  - /evaluation/projects/bridging/_base_metrics
+  - /evaluation/projects/scaling/_preprocessing_coco
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_masks
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_image
+  - /evaluation/projects/scaling/_metrics_discovery_masks
+  - /evaluation/projects/scaling/_metrics_segmentation
+  - /evaluation/projects/scaling/_metrics_slot_diagnosis
+  - /dataset: coco
+  - _self_
+
+eval_batch_size: 16
+
+experiment:
+  image_size: 224
+  mask_size: 320
+
+  num_patches_per_side: 37
+
+train_config_overrides:
+  - "models.object_decoder.num_patches=${mul:${experiment.num_patches_per_side},${experiment.num_patches_per_side}}"
+  - "losses.mse.target_path=upscale_features"
+
+checkpoint_hook:
+  _target_: ocl.utils.checkpoint_filters.ResamplePositionEmbedding
+  path: models.object_decoder.pos_embed
+  size: ["${experiment.num_patches_per_side}", "${experiment.num_patches_per_side}"]
+
+modules:
+  upscale_features:
+    _target_: routed.ocl.utils.resizing.Resize
+    input_path: feature_extractor.features
+    size: ["${experiment.num_patches_per_side}", "${experiment.num_patches_per_side}"]
+    patch_mode: true
+    out_patch_mode: true
+    channels_last: true

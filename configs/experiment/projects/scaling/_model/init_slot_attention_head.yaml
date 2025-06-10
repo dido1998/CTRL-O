@@ -1,0 +1,19 @@
+# @package _global_
+# Initialize conditioning, slot attention, decoder
+# Checkpoint path is supposed to be added in downstream configs.
+experiment:
+  sa_head_checkpoint_path: ???
+
+  callbacks:
+    weight_init_sa:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.sa_head_checkpoint_path}
+      target_path: models.perceptual_grouping
+    weight_init_conditioning:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.sa_head_checkpoint_path}
+      target_path: models.conditioning
+    weight_init_decoder:
+      _target_: ocl.callbacks.RestoreParameterSubset
+      checkpoint_file: ${experiment.sa_head_checkpoint_path}
+      target_path: models.object_decoder

@@ -1,0 +1,25 @@
+# @package _global_
+# Change eval masks to center crop.
+
+dataset:
+  eval_transforms:
+    03b_preprocessing:
+      transforms:
+        instance_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+            #- _target_: torchvision.transforms.v2.Resize
+            #  size: ${experiment.mask_size}
+            #  interpolation: ${torchvision_interpolation_mode:NEAREST_EXACT}
+            #- _target_: torchvision.transforms.v2.CenterCrop
+            #  size: ${experiment.mask_size}
+        segmentation_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+            #- _target_: torchvision.transforms.v2.Resize
+            #  size: ${experiment.mask_size}
+            #  interpolation: ${torchvision_interpolation_mode:NEAREST_EXACT}
+            #- _target_: torchvision.transforms.v2.CenterCrop
+            #  size: ${experiment.mask_size}

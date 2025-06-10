@@ -1,0 +1,49 @@
+# @package _global_
+dataset:
+  eval_transforms:
+    03a_pan_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: torchvision.transforms.Compose
+        transforms:
+          - _target_: ocl.preprocessing.AddIgnoreMasks
+            mask_key: panoptic_mask
+            ignore_key: panoptic_ignore_mask
+          - _target_: ocl.preprocessing.InstanceMasksToDenseMasks
+            instance_mask_key: panoptic_mask
+            category_key: panoptic_category
+          - _target_: ocl.preprocessing.DropCrowdMasks
+            mask_key: panoptic_mask
+            crowd_key: panoptic_iscrowd
+            missing_okay: true
+          - _target_: ocl.preprocessing.DropEntries
+            keys:
+              - panoptic_category
+              - panoptic_iscrowd
+      fields:
+        - image
+        - panoptic_mask
+        - panoptic_category
+        - panoptic_iscrowd
+      batch_transform: false
+    03b_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        panoptic_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+            - _target_: torchvision.transforms.v2.Resize
+              size: ${experiment.mask_size}
+              interpolation: ${torchvision_interpolation_mode:NEAREST_EXACT}
+            - _target_: torchvision.transforms.v2.CenterCrop
+              size: ${experiment.mask_size}
+        panoptic_ignore_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+            - _target_: torchvision.transforms.v2.Resize
+              size: ${experiment.mask_size}
+              interpolation: ${torchvision_interpolation_mode:NEAREST_EXACT}
+            - _target_: torchvision.transforms.v2.CenterCrop
+              size: ${experiment.mask_size}

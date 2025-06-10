@@ -1,0 +1,21 @@
+# @package _global_
+# Add regularizer predicting target features from finetuned features.
+defaults:
+  - /experiment/projects/scaling/finetuning/reg/_target_l2
+
+experiment:
+  num_predictor_hidden_layers: 1
+
+models:
+  feature_predictor:
+    _target_: routed.ocl.neural_networks.MLP
+    input_dim: ${experiment.feature_dim}
+    output_dim: ${experiment.feature_dim}
+    features: "${eval: '[2048] * a', ${experiment.num_predictor_hidden_layers}}"
+    activation_fn: gelu
+    initial_layer_norm: true
+    input_path: feature_extractor.features
+
+losses:
+  feature_l2_reg:
+    input_path: feature_predictor

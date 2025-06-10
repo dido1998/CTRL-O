@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder.
+defaults:
+  - /experiment/projects/scaling/coco_base16_dino
+  - /experiment/projects/scaling/finetuning/_finetuning

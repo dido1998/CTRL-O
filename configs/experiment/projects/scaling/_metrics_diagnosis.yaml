@@ -1,0 +1,15 @@
+# @package _global_
+evaluation_metrics:
+  slot_occupancy:
+    _target_: routed.ocl.metrics.SlotMaskOccupancy
+    masks_path: object_decoder.masks_as_image
+    threshold: 0.02
+  slot_mask_entropy:
+    _target_: routed.ocl.metrics.CategoricalEntropy
+    tensor_path: object_decoder.masks_as_image
+    dim: 1
+  slot_rankme:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: matrix_rank_soft
+    num_batch_dimensions: 2
+    tensor_path: perceptual_grouping.objects

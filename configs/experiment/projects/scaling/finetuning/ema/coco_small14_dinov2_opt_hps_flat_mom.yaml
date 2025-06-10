@@ -1,0 +1,15 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and EMA updates to target encoder.
+defaults:
+  - /experiment/projects/scaling/finetuning/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/ema/_ema
+  - /experiment/projects/scaling/finetuning/opt_hps/_settings
+
+experiment:
+  callbacks:
+    ema:
+      momentum: 0.9999
+
+losses:
+  mse:
+    normalize_target: true

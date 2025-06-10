@@ -1,0 +1,6 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2_bneck
+  - /experiment/projects/scaling/_model/slot_attention/no_pre_mlp
+  - _self_

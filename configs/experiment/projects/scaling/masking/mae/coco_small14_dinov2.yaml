@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with masking of features and MAE decoder reconstructing the image from the features.
+defaults:
+  - /experiment/projects/scaling/masking/coco_small14_dinov2_ft
+  - /experiment/projects/scaling/masking/mae/_mae

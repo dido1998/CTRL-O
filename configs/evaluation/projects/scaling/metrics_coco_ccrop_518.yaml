@@ -1,0 +1,32 @@
+# @package _global_
+# Evaluate center crop masks on COCO, using input images of resolution 518x518.
+
+defaults:
+  - /evaluation_config
+  - /evaluation/projects/bridging/_base_metrics
+  - /evaluation/projects/scaling/_preprocessing_coco
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_masks
+  - /evaluation/projects/scaling/_preprocessing_to_ccrop_image
+  - /evaluation/projects/scaling/_metrics_discovery_masks
+  - /evaluation/projects/scaling/_metrics_segmentation
+  - /evaluation/projects/scaling/_metrics_slot_diagnosis
+  - /dataset: coco
+  - _self_
+
+eval_batch_size: 16
+
+experiment:
+  image_size: 518
+  mask_size: 320
+
+  timm_model: vit_small_patch14_dinov2
+  num_patches: "${timm_model_num_patches: ${.timm_model}, ${.image_size}}"
+  num_patches_per_side: "${isqrt: ${.num_patches}}"
+
+train_config_overrides:
+  - "experiment.image_size=${experiment.image_size}"
+
+checkpoint_hook:
+  _target_: ocl.utils.checkpoint_filters.ResamplePositionEmbedding
+  path: models.object_decoder.pos_embed
+  size: ["${experiment.num_patches_per_side}", "${experiment.num_patches_per_side}"]

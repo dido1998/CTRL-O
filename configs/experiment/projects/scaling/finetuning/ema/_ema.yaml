@@ -1,0 +1,9 @@
+# @package _global_
+# Add EMA to update target network.
+experiment:
+  callbacks:
+    ema:
+      _target_: ocl.callbacks.EMAUpdater
+      source_to_target_modules:
+        models.feature_extractor: models.target_feature_extractor
+      momentum: 0.999

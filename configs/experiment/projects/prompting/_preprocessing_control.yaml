@@ -1,0 +1,153 @@
+# @package _global_
+dataset:
+  eval_transforms:
+    03a_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: torchvision.transforms.Compose
+        transforms:
+          - _target_: ocl.preprocessing.InstanceMasksToDenseMasks
+          - _target_: ocl.preprocessing.CopyFields
+            mapping:
+              instance_mask: instance_mask_v2
+          - _target_: ocl.preprocessing.SelectConditioningInfo
+            num_max_binds: ${experiment.max_num_binds}
+            num_slots: ${experiment.num_slots}
+          - _target_: ocl.preprocessing.DropCrowdMasks
+            mask_key: instance_mask
+            crowd_key: instance_iscrowd
+            missing_okay: true
+          - _target_: ocl.preprocessing.AddSegmentationMaskFromInstanceMask
+          - _target_: ocl.preprocessing.AddEmptyMasks
+            mask_keys:
+              - instance_mask
+              - segmentation_mask
+              - instance_mask_v2
+          - _target_: ocl.preprocessing.DropEntries
+            keys:
+              - instance_category
+              - instance_iscrowd
+      fields:
+        - image
+        - instance_mask
+        - instance_category
+        - instance_iscrowd
+        - name
+        - bbox_centroids
+        - name_embedding
+        - selected_indices
+        - contrastive_loss_mask
+        - all_bbox_centroids
+      batch_transform: false
+    03c_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        image:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"  # Make array writable
+            - _target_: torchvision.transforms.v2.ToImage
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.v2.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
+        instance_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+        instance_mask_v2:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+        segmentation_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+      batch_transform: false
+  train_transforms:
+    03a_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: torchvision.transforms.Compose
+        transforms:
+          - _target_: ocl.preprocessing.InstanceMasksToDenseMasks
+          - _target_: ocl.preprocessing.CopyFields
+            mapping:
+              instance_mask: instance_mask_v2
+          - _target_: ocl.preprocessing.SelectConditioningInfo
+            num_max_binds: ${experiment.max_num_binds}
+            num_slots: ${experiment.num_slots}
+          - _target_: ocl.preprocessing.DropCrowdMasks
+            mask_key: instance_mask
+            crowd_key: instance_iscrowd
+            missing_okay: true
+          - _target_: ocl.preprocessing.AddSegmentationMaskFromInstanceMask
+          - _target_: ocl.preprocessing.AddEmptyMasks
+            mask_keys:
+              - instance_mask
+              - segmentation_mask
+          - _target_: ocl.preprocessing.DropEntries
+            keys:
+              - instance_category
+              - instance_iscrowd
+      fields:
+        - image
+        - instance_mask
+        - instance_category
+        - instance_iscrowd
+        - name
+        - bbox_centroids
+        - name_embedding
+        - selected_indices
+        - contrastive_loss_mask
+      batch_transform: false
+    03b_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        image:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"  # Make array writable
+            - _target_: torchvision.transforms.v2.ToImage
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.v2.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
+        name_embedding:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda name_embedding: name_embedding.copy()'}"  # Make array writable
+            - _target_: ocl.preprocessing.ToTensor
+        bbox_centroids:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda bbox_centroids: bbox_centroids.copy()'}"  # Make array writable
+            - _target_: ocl.preprocessing.ToTensor
+        all_bbox_centroids:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda all_bbox_centroids: all_bbox_centroids.copy()'}"  # Make array writable
+            - _target_: ocl.preprocessing.ToTensor
+        selected_indices:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda selected_indices: selected_indices.copy()'}"  # Make array writable
+            - _target_: ocl.preprocessing.ToTensor
+        contrastive_loss_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda contrastive_loss_mask: contrastive_loss_mask.copy()'}"  # Make array writable
+            - _target_: ocl.preprocessing.ToTensor
+        instance_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+        instance_mask_v2:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+      batch_transform: false

@@ -1,0 +1,9 @@
+# @package _global_
+# Add optimizer group for bottleneck module.
+losses:
+  mask_loss:
+    _target_: routed.ocl.losses.ControlMaskReconstructionLoss
+    loss_type: bce
+    input_path: object_decoder.dual_masks_as_image
+    target_path: input.instance_mask_v2
+    control_mask_path: input.selected_indices

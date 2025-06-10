@@ -1,0 +1,13 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/scaling/controllable_coco_small14_dinov2
+  - _self_
+
+losses:
+  contrastive_loss:
+    _target_: routed.ocl.losses.DiagonalContrastiveLoss
+    l2_normalize: true
+    lang_slots_path: perceptual_grouping.lang_objects
+    point_slots_path: perceptual_grouping.point_objects
+    contrastive_loss_mask_path: input.contrastive_loss_mask

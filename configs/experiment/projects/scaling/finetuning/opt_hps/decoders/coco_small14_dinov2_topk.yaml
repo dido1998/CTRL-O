@@ -1,0 +1,6 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, using MLP decoder with top-k.
+defaults:
+  - /experiment/projects/scaling/finetuning/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/decoders/topk_decoding
+  - /experiment/projects/scaling/finetuning/opt_hps/_settings

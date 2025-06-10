@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, regularizing features towards target features.
+defaults:
+  - /experiment/projects/scaling/finetuning/reg/coco_small14_dinov2_target_l2_bneck
+  - /experiment/projects/scaling/_model/slot_attention/no_pre_mlp

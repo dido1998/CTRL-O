@@ -1,0 +1,24 @@
+# @package _global_
+evaluation_metrics:
+  point_binding_hits:
+    _target_: routed.ocl.metrics.BindingHits
+    prediction_path: object_decoder.point_masks_as_image
+    target_path: input.instance_mask
+    selected_indices_path: input.selected_indices
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: false
+  point_instance_ari:
+    _target_: routed.ocl.metrics.ARIMetric
+    prediction_path: object_decoder.point_masks_as_image
+    target_path: input.instance_mask
+    foreground: false
+    convert_target_one_hot: true
+    ignore_overlaps: true
+  point_instance_mbo:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.point_masks_as_image
+    target_path: input.instance_mask
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: true

@@ -1,0 +1,20 @@
+# @package _global_
+# Configuration of wandb logger. This is basic example of the usage.
+# TODO: add config to the logger
+
+trainer:
+  # We rely on hydras dir management
+  default_root_dir: .
+  logger:
+    - _target_: pytorch_lightning.loggers.TensorBoardLogger
+      save_dir: .
+      name : tb
+      version: ""
+    - _target_: pytorch_lightning.loggers.WandbLogger
+    # Override if you want to have a different structure
+      project: ${slice:${hydra:runtime.choices.experiment},"/", 1}_${slice:${hydra:runtime.choices.experiment},"/", 2}
+      name: ${slice:${hydra:runtime.choices.experiment},"/","3:"}
+      log_model: false
+hydra:
+  job:
+    chdir: true

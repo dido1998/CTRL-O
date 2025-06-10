@@ -1,0 +1,9 @@
+# The ClevrTex dataset, full (standard) variant
+_target_: ocl.datasets.WebdatasetDataModule
+train_shards: "${oc.env:DATASET_PREFIX}/clevrtex/full_train/shard-{000000..000043}.tar"
+train_size: 40000
+val_shards: "${oc.env:DATASET_PREFIX}/clevrtex/full_val/shard-{000000..000005}.tar"
+val_size: 5000
+test_shards: "${oc.env:DATASET_PREFIX}/clevrtex/full_test/shard-{000000..000005}.tar"
+test_size: 5000
+use_autopadding: true

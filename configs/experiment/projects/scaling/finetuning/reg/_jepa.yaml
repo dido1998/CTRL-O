@@ -1,0 +1,5 @@
+# @package _global_
+# Add JEPA-like regularizer to features and enable masking.
+defaults:
+  - /experiment/projects/scaling/masking/_masking
+  - /experiment/projects/scaling/masking/jepa/_jepa

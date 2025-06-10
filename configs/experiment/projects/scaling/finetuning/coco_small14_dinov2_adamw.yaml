@@ -1,0 +1,10 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and AdamW.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/_finetuning
+  - /experiment/projects/scaling/_opt/finetuning
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true

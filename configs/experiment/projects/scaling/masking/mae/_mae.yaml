@@ -1,0 +1,40 @@
+# @package _global_
+# Add a MAE decoder to the features, trained to reconstruct the original RGB image
+
+models:
+  mae_decoder:
+    _target_: routed.ocl.decoding.MAEDecoder
+    feature_dim: ${experiment.feature_dim}
+    output_dim: "${mul: ${experiment.patch_size}, ${experiment.patch_size}, 3}"
+    decoder_dim: 384
+    num_patches: ${experiment.num_patches}
+    decoder:
+      _target_: ocl.neural_networks.build_transformer_encoder
+      input_dim: ${..decoder_dim}
+      output_dim: ${..decoder_dim}
+      n_layers: 4
+      n_heads: 16
+      use_output_transform: false
+    features_path: feature_extractor.features
+    mask_indices_restore_path: feature_extractor.aux_features.mask_indices_restore
+    image_path: input.image
+
+losses:
+  mse_mae:
+    _target_: routed.ocl.losses.MAELoss
+    weight: 1.0
+    normalize_target: false
+    patchify_target: true
+    patch_size:  ${experiment.patch_size}
+    input_path: mae_decoder.reconstruction
+    target_path: input.image
+    masks_path: feature_extractor.aux_features.mask
+
+visualizations:
+  mae/recon:
+    _target_: routed.ocl.visualizations.Image
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: mae_decoder.reconstruction_as_image

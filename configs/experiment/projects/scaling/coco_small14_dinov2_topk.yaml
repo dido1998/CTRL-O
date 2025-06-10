@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with top-k decoding.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/decoders/topk_decoding

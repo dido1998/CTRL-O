@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with masking of features and JEPA decoder reconstructing target features.
+defaults:
+  - /experiment/projects/scaling/masking/coco_small14_dinov2_ft
+  - /experiment/projects/scaling/masking/jepa/_jepa

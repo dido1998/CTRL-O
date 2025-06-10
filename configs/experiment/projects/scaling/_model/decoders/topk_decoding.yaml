@@ -1,0 +1,9 @@
+# @package _global_
+# Add top-k decoding to MLP decoder.
+models:
+  object_decoder:
+    top_k: 3
+    sampled_top_k: false
+    training_top_k: true
+    eval_top_k: true
+    masks_path: perceptual_grouping.feature_attributions

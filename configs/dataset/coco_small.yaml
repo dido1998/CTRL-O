@@ -1,0 +1,11 @@
+# The coco2017 dataset with ~10k training samples.
+#
+# Val split was generated using --instance --panoptic.
+_target_: ocl.datasets.WebdatasetDataModule
+train_shards: "${oc.env:DATASET_PREFIX}/coco2017/train/shard-{000000..000030}.tar"
+train_size: 10002
+val_shards: "${oc.env:DATASET_PREFIX}/coco2017/val/shard-{000000..000017}.tar"
+val_size: 5000
+test_shards: "${oc.env:DATASET_PREFIX}/coco2017/test/shard-{000000..000126}.tar"
+test_size: 40670
+use_autopadding: true

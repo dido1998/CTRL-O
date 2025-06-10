@@ -1,0 +1,10 @@
+# @package _global_
+# Add recurrent gated update to slot attention instead of GRU update.
+models:
+  perceptual_grouping:
+    use_gru: false
+    slot_update:
+      _target_: ocl.neural_networks.RecurrentGatedCell
+      _partial_: true
+      input_size: ${..object_dim}
+      hidden_size:  ${..object_dim}

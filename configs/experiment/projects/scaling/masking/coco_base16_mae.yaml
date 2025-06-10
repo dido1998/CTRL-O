@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with masking of inputs.
+defaults:
+  - /experiment/projects/scaling/coco_base16_mae
+  - /experiment/projects/scaling/masking/_masking

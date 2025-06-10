@@ -1,0 +1,16 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and EMA updates to target encoder, as well as
+# JEPA regularization.
+defaults:
+  - /experiment/projects/scaling/finetuning/reg/coco_small14_dinov2_jepa
+  - /experiment/projects/scaling/finetuning/ema/_ema_masking
+  - /experiment/projects/scaling/finetuning/ema/_momentum_schedule
+  - /experiment/projects/scaling/_opt/cosine_schedule
+  - /experiment/projects/scaling/_opt/finetuning_with_masking
+  - /experiment/projects/scaling/_opt/jepa_decoder
+
+losses:
+  mse:
+    normalize_target: true
+  mse_jepa:
+    normalize_target: true

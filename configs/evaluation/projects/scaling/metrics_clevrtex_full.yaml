@@ -1,0 +1,16 @@
+# @package _global_
+# Evaluate masks on ClevrTex, full (standard) variant.
+defaults:
+  - /evaluation_config
+  - /evaluation/projects/bridging/_base_metrics
+  - /evaluation/projects/scaling/_preprocessing_clevrtex
+  - /evaluation/projects/bridging/_metrics_discovery_movi
+  - /evaluation/projects/scaling/_metrics_slot_diagnosis
+  - /dataset: clevrtex_full
+  - _self_
+
+eval_batch_size: 16
+
+modules:
+  masks_resized:
+    size_tensor_path: input.mask

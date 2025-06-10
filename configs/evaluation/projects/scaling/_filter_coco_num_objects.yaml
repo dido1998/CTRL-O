@@ -1,0 +1,10 @@
+# @package _global_
+# Drop images that do not have at least 7 objects on them.
+dataset:
+  eval_transforms:
+    02z_preprocessing:
+      _target_: ocl.transforms.Filter
+      predicate: "${lambda_fn:'lambda categories: len(categories) >= 7 if categories is not None else False'}"
+      missing_okay: true
+      fields:
+        - instance_category

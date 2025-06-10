@@ -1,0 +1,10 @@
+# @package _global_
+# Add tracking of feature statistics to the model
+experiment:
+  callbacks:
+    log_feature_statistics:
+      _target_: ocl.callbacks.LogFeatureStatistics
+      track_param_norms: true
+      track_gradient_norms: true
+      track_activation_norms: true
+      log_every: ${trainer.log_every_n_steps}

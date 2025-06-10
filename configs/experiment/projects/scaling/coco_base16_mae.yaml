@@ -1,0 +1,24 @@
+# @package _global_
+# DINOSAUR with ViT-B/16 and MAE weights.
+defaults:
+  - /experiment/projects/scaling/_base_dinosaur
+  - /dataset: coco
+  - /experiment/projects/scaling/_preprocessing_coco
+  - /experiment/projects/scaling/_metrics_coco
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_base_patch16_224.mae
+
+models:
+  conditioning:
+    _target_: routed.ocl.conditioning.RandomConditioning
+
+  object_decoder:
+    _target_: routed.ocl.decoding.PatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]

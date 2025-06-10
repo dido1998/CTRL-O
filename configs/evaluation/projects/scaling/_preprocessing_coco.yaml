@@ -1,0 +1,72 @@
+# @package _global_
+# Preprocessing for evaluating on COCO with 80 things classes, dropping crowd masks.
+#
+# Masks are in original image resolution.
+dataset:
+  eval_transforms:
+    03a_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: torchvision.transforms.Compose
+        transforms:
+          - _target_: ocl.preprocessing.InstanceMasksToDenseMasks
+            instance_mask_key: instance_mask
+            category_key: instance_category
+          - _target_: ocl.preprocessing.CopyFields
+            mapping:
+              instance_mask: instance_mask_v2
+          - _target_: ocl.preprocessing.DropCrowdMasks
+            mask_key: instance_mask
+            crowd_key: instance_iscrowd
+            missing_okay: true
+          - _target_: ocl.preprocessing.AddSegmentationMaskFromInstanceMask
+          - _target_: ocl.preprocessing.AddEmptyMasks
+            mask_keys:
+              - instance_mask
+              - segmentation_mask
+          - _target_: ocl.preprocessing.DropEntries
+            keys:
+              - instance_category
+              - instance_iscrowd
+      fields:
+        - image
+        - instance_mask
+        - instance_category
+        - instance_iscrowd
+        - name
+        - bbox_centroids
+        - name_embedding
+        - selected_indices
+        - contrastive_loss_mask
+      batch_transform: false
+    03b_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        image:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"
+            - _target_: torchvision.transforms.v2.ToImage
+            #- _target_: torchvision.transforms.v2.Resize
+            #  size: ${experiment.image_size}
+            #  interpolation: ${torchvision_interpolation_mode:BICUBIC}
+            #  antialias: true
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
+        instance_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+        instance_mask_v2:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+        segmentation_mask:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - _target_: ocl.preprocessing.DenseMaskToTensor
+      batch_transform: false

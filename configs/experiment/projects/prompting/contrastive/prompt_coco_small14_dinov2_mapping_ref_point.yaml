@@ -1,0 +1,216 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/prompting/_base_prompting_dinosaur
+  - /dataset: refcocog
+  - /experiment/projects/prompting/_preprocessing_control_ref
+  - /experiment/projects/prompting/_metrics
+  # - /cluster/wandb_logging
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_small_patch14_dinov2.lvd142m
+  mapping_lr: "${mul: 0.1, ${.total_lr}}"
+
+models:
+  feature_extractor:
+    dynamic_img_size: true
+
+  mapping:
+    _target_: routed.ocl.mapping.MLPMapping
+    dim: ${experiment.feature_dim}
+    x_path: feature_extractor
+
+
+  conditioning:
+    _target_: routed.ocl.conditioning.LangConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    dual_conditioning: false
+    name_embedding_path: input.references_embedding
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  perceptual_grouping:
+    _target_: routed.ocl.perceptual_grouping.SlotAttentionGrouping
+    feature_dim: ${.object_dim}
+    object_dim: ${experiment.slot_dim}
+    use_projection_bias: false
+    positional_embedding:
+      _target_: ocl.neural_networks.wrappers.Sequential
+      _args_:
+        - _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+        - _target_: ocl.neural_networks.build_two_layer_mlp
+          input_dim: ${experiment.feature_dim}
+          output_dim: ${....feature_dim}
+          hidden_dim: "${mul: ${experiment.feature_dim}, 2}"
+          initial_layer_norm: true
+    ff_mlp:
+      _target_: ocl.neural_networks.build_two_layer_mlp
+      input_dim: ${..object_dim}
+      output_dim: ${..object_dim}
+      hidden_dim: "${mul: ${..object_dim}, 4}"
+      initial_layer_norm: true
+      residual: true
+    feature_path: mapping
+    conditioning_path: conditioning
+
+  attn_aggregation:
+    _target_: routed.ocl.heads.AttentionAggregationHead
+    dim: ${experiment.feature_dim}
+    attn_path: perceptual_grouping.feature_attributions
+    x_path: mapping.features
+
+  projector_slots:
+    _target_: routed.ocl.heads.SlotProjectorHead
+    dim: ${experiment.feature_dim}
+    embedding_dim: 4096
+    slots_path: attn_aggregation
+
+  # dual_embedding:
+  #   _target_: routed.ocl.heads.LangEmbeddingHead
+  #   embedding_dim: 4096
+  #   name_embedding_path: input.references_embedding
+  dual_embedding:
+    _target_: routed.ocl.heads.DualEmbeddingHead
+    embedding_dim: 4096
+    name_embedding_path: input.references_embedding
+    point_embedding_path: input.bbox_centroids
+
+
+  dec_conditioning:
+    _target_: routed.ocl.decoder_conditioning.EncodeLangConditioning
+    dim: ${experiment.slot_dim}
+    language_path: input.references_embedding
+    mask_path: input.contrastive_loss_mask
+
+  object_decoder:
+    _target_: routed.ocl.decoding.PatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    object_dim: ${experiment.slot_dim}
+    output_dim: ${experiment.feature_dim}
+    num_patches: ${experiment.num_patches}
+    object_features_path: perceptual_grouping.objects
+    image_path: input.image
+    conditioned: true
+    condition_info_path: dec_conditioning
+
+
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.AdamW
+      _partial_: true
+    parameter_groups:
+      _target_: ocl.optimization.ParameterGroupCreator
+      param_groups:
+        grouping:
+          params: [models.perceptual_grouping, models.conditioning,
+                   models.object_decoder, models.dec_conditioning]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0
+        encoder:
+          params: [models.mapping, models.dual_embedding, models.attn_aggregation, models.projector_slots]
+          lr: ${experiment.mapping_lr}
+          weight_decay: 0.0
+
+losses:
+  mse:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: object_decoder.reconstruction
+    target_path: feature_extractor.features
+  contrastive_loss:
+    _target_: routed.ocl.losses.DiagonalContrastiveLoss
+    x1_path: projector_slots
+    x2_path: dual_embedding
+    contrastive_loss_mask_path: input.contrastive_loss_mask
+    temp: 0.1
+    batch_contrastive: true
+    # weight: 0.2
+
+visualizations:
+  input:
+    _target_: routed.ocl.visualizations.Image
+    n_instances: 32
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+  masks:
+    _target_: routed.ocl.visualizations.Mask
+    mask_path: object_decoder.masks_as_image
+  pred_segmentation:
+    _target_: routed.ocl.visualizations.Segmentation
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.masks_as_image
+  pred_segmentation_with_text:
+    _target_: routed.ocl.visualizations.SegmentationWithText
+    n_instances: 32
+    denormalization:
+      _target_: ocl.preprocessing.Denormalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    image_path: input.image
+    mask_path: object_decoder.masks_as_image
+    gt_masks_path: input.instance_mask_v2
+    selected_indices_path: input.selected_indices
+    text_path: input.name
+    bbox_centroids_path: input.all_bbox_centroids
+
+evaluation_metrics:
+  acc_sc:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: sc
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask
+  acc_cs:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: cs
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask
+
+  acc_avg:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: average
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask
+
+training_metrics:
+  acc_sc:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: sc
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask
+
+
+  acc_cs:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: cs
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask
+
+
+  acc_avg:
+    _target_: routed.ocl.metrics.acc.EmbAccMetric
+    mode: average
+    slot_emb_path: projector_slots
+    ctrl_emb_path: dual_embedding
+    mask_idx_path: input.contrastive_loss_mask

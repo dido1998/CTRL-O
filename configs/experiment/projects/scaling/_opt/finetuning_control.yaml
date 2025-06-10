@@ -1,0 +1,64 @@
+# @package _global_
+# Add finegrained optimization settings for finetuning the encoder.
+experiment:
+  encoder_lr_factor: 0.5
+  encoder_base_lr: "${mul: ${experiment.base_learning_rate}, ${experiment.encoder_lr_factor}}"
+  encoder_total_lr: "${eval: 'a * (b / 64)**0.5', ${.encoder_base_lr}, ${.total_batch_size}}"
+  encoder_layerwise_lr_decay: 0.9
+  encoder_weight_decay: 0.1
+  mapping_lr: "${mul: 0.1, ${.total_lr}}"
+
+  callbacks:
+    verify_optimizer_groups:
+      _target_: ocl.callbacks.VerifyOptimizerGroups
+      missing_okay:
+        - "models.target_"
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.AdamW
+      _partial_: true
+    parameter_groups:
+      _target_: ocl.optimization.ParameterGroupCreator
+      param_groups:
+        grouping:
+          params: [
+                  models.dec_conditioning,
+                  models.perceptual_grouping,
+                  models.conditioning,
+                  models.object_decoder,
+                  models.concat_features,
+                  models.point_head,
+                  models.category_head
+                  ]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0
+        encoder:
+          params:
+          - [models.feature_extractor.model.patch_embed,
+             models.feature_extractor.model.cls_token,
+             models.feature_extractor.model.reg_token,
+             models.feature_extractor.model.pos_embed,
+             models.feature_extractor.model.norm_pre,
+             models.feature_extractor.model.blocks.0]
+          - models.feature_extractor.model.blocks.1
+          - models.feature_extractor.model.blocks.2
+          - models.feature_extractor.model.blocks.3
+          - models.feature_extractor.model.blocks.4
+          - models.feature_extractor.model.blocks.5
+          - models.feature_extractor.model.blocks.6
+          - models.feature_extractor.model.blocks.7
+          - models.feature_extractor.model.blocks.8
+          - models.feature_extractor.model.blocks.9
+          - models.feature_extractor.model.blocks.10
+          - [models.feature_extractor.model.blocks.11, models.feature_extractor.model.norm]
+          lr: ${experiment.encoder_total_lr}
+          weight_decay: ${experiment.encoder_weight_decay}
+          layerwise_lr_decay: ${experiment.encoder_layerwise_lr_decay}
+        mapping:
+          params: [models.mapping]
+          lr: ${experiment.mapping_lr}
+          weight_decay: 0.01
+          layerwise_lr_decay: 0.9

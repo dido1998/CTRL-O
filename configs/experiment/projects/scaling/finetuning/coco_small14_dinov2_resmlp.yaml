@@ -1,0 +1,9 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and residual MLP decoder.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2_resmlp
+  - /experiment/projects/scaling/finetuning/_finetuning
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true

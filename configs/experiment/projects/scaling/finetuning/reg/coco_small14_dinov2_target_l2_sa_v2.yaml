@@ -1,0 +1,18 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and several SA tweaks:
+# - No SA pre-MLP
+# - Inverted transformer design with gated update
+# - Cosine attention
+# - Post SA bottleneck
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2_bneck
+  - /experiment/projects/scaling/finetuning/_finetuning
+  - /experiment/projects/scaling/finetuning/reg/_target_l2
+  - /experiment/projects/scaling/_model/slot_attention/no_pre_mlp
+  - /experiment/projects/scaling/_model/slot_attention/inv_tf
+  - /experiment/projects/scaling/_model/slot_attention/gated_update
+  - _self_
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true

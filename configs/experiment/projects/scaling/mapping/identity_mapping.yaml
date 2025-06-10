@@ -1,0 +1,6 @@
+# @package _global_
+# Add optimizer group for bottleneck module.
+models:
+    mapping:
+      _target_: routed.ocl.mapping.IdentityMapping
+      x_path: feature_extractor

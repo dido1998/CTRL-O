@@ -1,0 +1,6 @@
+# @package _global_
+# DINOSAUR with masking of inputs, finetuning the feature extractor and partial decoding of targets.
+defaults:
+  - /experiment/projects/scaling/masking/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/_finetuning
+  - /experiment/projects/scaling/masking/_partial_decoding

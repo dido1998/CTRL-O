@@ -1,0 +1,24 @@
+# @package _global_
+# Add a frozen pretrained feature extractor that the model is trained against.
+experiment:
+  target_timm_model: ${experiment.timm_model}
+  target_feature_dim: "${timm_model_dim: ${.target_timm_model}}"
+  target_num_patches: "${timm_model_num_patches: ${.target_timm_model}, ${.image_size}}"
+  target_patch_size: "${timm_model_patch_size: ${.target_timm_model}}"
+
+models:
+  target_feature_extractor:
+    _target_: routed.ocl.feature_extractors.TimmFeatureExtractor
+    model_name: ${experiment.target_timm_model}
+    pretrained: true
+    freeze: true
+    feature_level: 12
+    video_path: input.image
+
+  object_decoder:
+    output_dim: ${experiment.target_feature_dim}
+    num_patches: ${experiment.target_num_patches}
+
+losses:
+  mse:
+    target_path: target_feature_extractor.features

@@ -1,0 +1,9 @@
+# @package _global_
+# Add EMA to update target network for masked ViTs.
+experiment:
+  callbacks:
+    ema:
+      _target_: ocl.callbacks.EMAUpdater
+      source_to_target_modules:
+        models.feature_extractor.model.vit: models.target_feature_extractor.model
+      momentum: 0.999

@@ -1,0 +1,60 @@
+# @package _global_
+# Common parameters for DINOSAUR.
+defaults:
+  - /settings/output_path
+  - /settings/epochless
+  - /settings/log_frequencies
+  - /training_config
+  - _self_
+
+experiment:
+  image_size: 224
+  mask_size: ${.image_size}
+  batch_size_per_gpu: 64
+  base_learning_rate: 0.0004
+  max_num_binds: 7
+
+  # Empty values to be set in downstream configs
+  slot_dim: null
+  num_slots: null
+  timm_model: null
+
+  # Automatically derived properties
+  feature_dim: "${timm_model_dim: ${.timm_model}}"
+  num_patches: "${timm_model_num_patches: ${.timm_model}, ${.image_size}}"
+  num_patches_per_side: "${isqrt: ${.num_patches}}"
+  patch_size: "${timm_model_patch_size: ${.timm_model}}"
+  total_batch_size: "${mul: ${trainer.devices}, ${.batch_size_per_gpu}}"
+  total_lr: "${eval: 'a * (b / 64)**0.5', ${.base_learning_rate}, ${.total_batch_size}}"
+
+trainer:
+  devices: 1
+  max_steps: 500000
+  gradient_clip_val: 1.0
+
+models:
+  feature_extractor:
+    _target_: routed.ocl.feature_extractors.TimmFeatureExtractor
+    model_name: ${experiment.timm_model}
+    pretrained: ${when_testing:false,true}
+    freeze: true
+    feature_level: 12
+    video_path: input.image
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.Adam
+      _partial_: true
+      lr: ${experiment.total_lr}
+    lr_scheduler:
+      _target_: ocl.scheduling.exponential_decay_after_optional_warmup
+      _partial_: true
+      decay_rate: 0.5
+      decay_steps: 100000
+      warmup_steps: 10000
+
+dataset:
+  num_workers: 4
+  batch_size: ${experiment.batch_size_per_gpu}

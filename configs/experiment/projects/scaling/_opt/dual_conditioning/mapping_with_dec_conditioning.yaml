@@ -1,0 +1,23 @@
+# @package _global_
+# Add finegrained optimization settings for finetuning the encoder.
+experiment:
+  mapping_lr: "${mul: 0.1, ${.total_lr}}"
+
+optimizers:
+  opt0:
+    _target_: ocl.optimization.OptimizationWrapper
+    optimizer:
+      _target_: torch.optim.AdamW
+      _partial_: true
+    parameter_groups:
+      _target_: ocl.optimization.ParameterGroupCreator
+      param_groups:
+        grouping:
+          params: [models.perceptual_grouping, models.conditioning, models.dual_conditioning,  models.decoder_conditioning, models.object_decoder]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0
+        encoder:
+          params: [models.mapping]
+          lr: ${experiment.mapping_lr}
+          weight_decay: 0.01
+          layerwise_lr_decay: 0.9

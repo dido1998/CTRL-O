@@ -1,0 +1,16 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights, improved hyperparameters.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/_opt/cosine_schedule
+
+experiment:
+  base_learning_rate: 0.0003
+  batch_size_per_gpu: 128
+
+trainer:
+  gradient_clip_val: 0.1
+
+losses:
+  mse:
+    normalize_target: true

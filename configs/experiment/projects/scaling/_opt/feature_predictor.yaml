@@ -1,0 +1,10 @@
+# @package _global_
+# Add optimizer group for feature predictor.
+optimizers:
+  opt0:
+    parameter_groups:
+      param_groups:
+        feature_predictor:
+          params: [models.feature_predictor]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0

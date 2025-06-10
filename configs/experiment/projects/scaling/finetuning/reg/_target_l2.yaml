@@ -1,0 +1,8 @@
+# @package _global_
+# Add regularizer pulling finetuned features towards target features.
+losses:
+  feature_l2_reg:
+    _target_: routed.ocl.losses.ReconstructionLoss
+    loss_type: mse
+    input_path: feature_extractor.features
+    target_path: target_feature_extractor.features

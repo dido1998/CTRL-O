@@ -1,0 +1,113 @@
+[tool.poetry]
+name = "ocl"
+version = "0.1.0"
+description = ""
+authors = [
+  "Max Horn <hornmax@amazon.de>",
+  "Maximilian Seitzer <maximilian.seitzer@tuebingen.mpg.de>",
+  "Andrii Zadaianchuk <andrii.zadaianchuk@tuebingen.mpg.de>",
+  "Zixu Zhao <zhaozixu@amazon.com>",
+  "Dominik Zietlow <zietld@amazon.de>",
+  "Florian Wenzel <flwenzel@amazon.de>",
+  "Tianjun Xiao <tianjux@amazon.com>"
+]
+license = "Apache-2.0"
+repository = "https://github.com/amazon-science/object-centric-learning-framework"
+readme = "README.md"
+include = ["configs/"]
+packages = [
+    { include = "ocl" },
+    { include = "routed" },
+]
+
+[tool.poetry.scripts]
+ocl_train = "ocl.cli.train:train"
+ocl_eval = "ocl.cli.eval:evaluate"
+ocl_compute_dataset_size = "ocl.cli.compute_dataset_size:compute_size"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<3.12"
+torch = "^2.2.0"
+pytorch-lightning = "^2.1.4"
+hydra-zen = "^0.7.0"
+torchtyping = "^0.1.4"
+hydra-core = "^1.3.0"
+torchvision = "^0.17.0"
+torchmetrics = "^1.3.0"
+matplotlib = "^3.7.1"
+moviepy = "^1.0.3"
+scipy = "<=1.10"
+awscli = "^1.32"
+scikit-learn = "^1.0.2"
+pyamg = "^4.2.3"
+botocore = { extras = ["crt"], version = "^1.34" }
+motmetrics = "^1.2.5"
+einops = "^0.6.0"
+torchdata = "^0.7.1"
+braceexpand = "^0.1.7"
+s3fs = "^2024.2.0"
+decord = "^0.6.0"
+tensorboardx = "^2.6.2.2"
+tqdm = "^4.66.1"
+tensorboard = {version = "<2.14.0", optional = true}
+scikit-image = "0.21"
+pyyaml = "6.0.1"
+# Dependencies for support of externally defined models.
+timm = "^1.0.7"
+clip = {git = "https://github.com/openai/CLIP.git", rev = "main", optional = true}
+ftfy = {version = "^6.1.1", optional = true}
+regex = {version = "^2022.7.9", optional = true}
+# Dependencies for MPI cluster
+gitpython = {version = "^3.0.5", optional=true}
+pandas = {version = "^2.0.3", optional=true}
+colorama = {version = "^0.4.4", optional=true}
+pyuv = {git = "https://github.com/saghul/pyuv.git", rev = "2a3d42d44c6315ebd73899a35118380d2d5979b5", optional=true}
+smart_settings = {git = "https://github.com/martius-lab/smart-settings.git", rev = "eb7331fdcad58d314a842087bbf136735e890013", optional=true}
+# Dependencies for notebook
+notebook = {version = "^7.0.6", optional=true}
+opencv-python = "^4.10.0.84"
+wandb = "^0.17.5"
+requests = "^2.32.3"
+huggingface-hub = "^0.24.7"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.1.0"
+pytest = "^7.0.1"
+flake8 = "^6.0.0"
+flake8-isort = "^6.0.0"
+pre-commit = "^3.5.0"
+flake8-tidy-imports = "^4.7"
+flake8-bugbear = "^23.3"
+flake8-docstrings = "^1.7.0"
+
+[tool.poetry.group.docs]
+optional = true
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.2"
+mkdocstrings = {extras = ["python"], version = "^0.21.2"}
+mkdocs-material = "^9.1.6"
+mkdocs-gen-files = "^0.4.0"
+mkdocs-literate-nav = "^0.6.0"
+ruamel-yaml = "^0.17.21"
+gitpython = "^3.1.31"
+
+[tool.poetry.extras]
+timm = ["timm"]
+clip = ["clip", "ftfy", "regex"]
+tensorboard = ["tensorboard"]
+mpi_cluster = ["gitpython", "pandas", "jinja2", "colorama", "pyuv", "smart_settings"]
+notebook = ["notebook"]
+
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 101
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 101
+skip_gitignore = true
+remove_redundant_aliases = true

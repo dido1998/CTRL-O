@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rsync -av $COPY_DATASET_SOURCE $COPY_DATASET_DEST

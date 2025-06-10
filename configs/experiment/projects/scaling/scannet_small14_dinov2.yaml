@@ -1,0 +1,34 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights.
+defaults:
+  - /experiment/projects/scaling/_base_dinosaur
+  - /dataset: scannet
+  - /experiment/projects/bridging/dinosaur/_preprocessing_movi_dino_feature_recon
+  - /experiment/projects/bridging/dinosaur/_metrics_clevr_patch
+  - _self_
+
+experiment:
+  slot_dim: 256
+  num_slots: 7
+  timm_model: vit_small_patch14_dinov2.lvd142m
+
+models:
+  feature_extractor:
+    dynamic_img_size: true
+
+  conditioning:
+    _target_: routed.ocl.conditioning.RandomConditioning
+
+  object_decoder:
+    _target_: routed.ocl.decoding.PatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+
+  masks_as_image:
+    _target_: routed.ocl.utils.resizing.Resize
+    input_path: object_decoder.masks
+    size: 128
+    resize_mode: bilinear
+    patch_mode: true

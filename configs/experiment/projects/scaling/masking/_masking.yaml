@@ -1,0 +1,12 @@
+# @package _global_
+# Add masking to ViT feature extractor, use unmasked target feature extractor.
+defaults:
+  - /experiment/projects/scaling/_model/target_feature_extractor
+
+experiment:
+  masked_timm_model: masked_${.timm_model}
+
+models:
+  feature_extractor:
+    model_name: ${experiment.masked_timm_model}
+    masking_rate: 0.5

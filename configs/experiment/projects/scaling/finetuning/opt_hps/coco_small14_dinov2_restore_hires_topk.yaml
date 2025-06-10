@@ -1,0 +1,92 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 initializing from a pre-trained checkpoint, finetuning at images of size 518x518.
+defaults:
+  - /experiment/projects/scaling/finetuning/opt_hps/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/init_feature_extractor
+  - /experiment/projects/scaling/_model/init_slot_attention_head
+  - /experiment/projects/scaling/_model/decoders/topk_decoding
+
+experiment:
+  sa_head_checkpoint_path: ${experiment.feature_extractor_checkpoint_path}
+  image_size: 518
+  mask_size: 224
+  batch_size_per_gpu: 64  # Batch size 128 does not fit on 80GB with hi-res.
+
+  callbacks:
+    weight_init_decoder:
+      filter_fn:
+        _target_: ocl.utils.checkpoint_filters.ResamplePositionEmbedding
+        path: pos_embed
+        size: ["${experiment.num_patches_per_side}", "${experiment.num_patches_per_side}"]
+
+models:
+  object_decoder:
+    image_path: input.image224
+
+visualizations:
+  input:
+    image_path: input.image224
+  pred_segmentation:
+    image_path: input.image224
+
+dataset:
+  eval_transforms:
+    03aa_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: ocl.preprocessing.CopyFields
+        mapping:
+          image: image224
+      fields:
+        - image
+      batch_transform: false
+    03b_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        image224:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"  # Make array writable
+            - _target_: torchvision.transforms.v2.ToImage
+            - _target_: torchvision.transforms.v2.Resize
+              size: ${experiment.mask_size}
+              interpolation: ${torchvision_interpolation_mode:BICUBIC}
+              antialias: true
+            - _target_: torchvision.transforms.v2.CenterCrop
+              size: ${experiment.mask_size}
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.v2.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
+  train_transforms:
+    03aa_preprocessing:
+      _target_: ocl.transforms.Map
+      transform:
+        _target_: ocl.preprocessing.CopyFields
+        mapping:
+          image: image224
+      fields:
+        - image
+      batch_transform: false
+    03b_preprocessing:
+      _target_: ocl.transforms.SimpleTransform
+      transforms:
+        image224:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"  # Make array writable
+            - _target_: torchvision.transforms.v2.ToImage
+            - _target_: torchvision.transforms.v2.Resize
+              size: ${experiment.mask_size}
+              interpolation: ${torchvision_interpolation_mode:BICUBIC}
+              antialias: true
+            - _target_: torchvision.transforms.v2.CenterCrop
+              size: ${experiment.mask_size}
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.v2.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]

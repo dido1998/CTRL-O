@@ -1,0 +1,38 @@
+optimization_procedure_name: "test"
+results_dir: "{ENV_HOME}/data/ocl"
+git_params:
+  url: "git@github.com:dido1998/object-centric-learning-framework.git"
+  branch: "master"
+  commit:
+
+script_relative_path: "ocl/cli/mpi_cluster_train.py"
+environment_setup:
+  # Needed to run cloned repository instead of poetry installed project
+  run_as_module: true
+remove_jobs_dir: false
+remove_working_dir: false
+
+cluster_requirements:
+  request_cpus: 1
+  request_gpus: 1
+  memory_in_mb: 10000
+  cuda_requirement: ">=8.0"
+  bid: 25
+
+restarts: 1
+
+fixed_params:
+  experiment_path: projects/bridging/dinosaur/coco_feat_rec_dino_base16
+  exit_for_resume_time: 00:00:00:10
+  "plus-experiment.checkpoint_every_n_steps": 20
+  "trainer.max_steps": 50
+  "trainer.max_epochs": -1
+  "trainer.devices": 1
+  "trainer.val_check_interval": 20
+  "trainer.check_val_every_n_epoch": _null_
+  "trainer.limit_val_batches": 2
+
+hyperparam_list:
+  - param: "dataset.batch_size"
+    values:
+    - 8

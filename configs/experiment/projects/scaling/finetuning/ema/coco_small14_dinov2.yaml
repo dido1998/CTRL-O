@@ -1,0 +1,12 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder and EMA updates to target encoder.
+defaults:
+  - /experiment/projects/scaling/finetuning/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/ema/_ema
+  - /experiment/projects/scaling/finetuning/ema/_momentum_schedule
+  - /experiment/projects/scaling/_opt/cosine_schedule
+  - /experiment/projects/scaling/_opt/finetuning
+
+losses:
+  mse:
+    normalize_target: true

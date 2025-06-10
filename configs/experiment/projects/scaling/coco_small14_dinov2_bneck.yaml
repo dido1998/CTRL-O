@@ -1,0 +1,31 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 and DINOv2 weights and explicit slot bottleneck.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/_model/slot_attention/bottleneck
+  - _self_
+
+experiment:
+  slot_dim: 128
+
+models:
+  conditioning:
+    _target_: routed.ocl.conditioning.RandomConditioning
+    object_dim: ${experiment.feature_dim}
+    mean_init:
+      _target_: torch.nn.init.zeros_
+      _partial_: true
+    logsigma_init:
+      _target_: torch.nn.init.zeros_
+      _partial_: true
+
+  perceptual_grouping:
+    feature_dim: ${experiment.feature_dim}
+    object_dim: ${experiment.feature_dim}
+    use_cosine_attention: true
+
+  object_decoder:
+    decoder_input_dim: ${experiment.feature_dim}
+    pos_embed_scale: 1.0
+    decoder:
+      initial_layer_norm: true

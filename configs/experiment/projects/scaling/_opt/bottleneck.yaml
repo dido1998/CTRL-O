@@ -1,0 +1,10 @@
+# @package _global_
+# Add optimizer group for bottleneck module.
+optimizers:
+  opt0:
+    parameter_groups:
+      param_groups:
+        bottleneck:
+          params: [models.bottleneck]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0

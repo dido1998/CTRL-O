@@ -1,0 +1,11 @@
+# @package _global_
+# Set sane logging frequencies.
+
+trainer:
+  log_every_n_steps: 100
+  val_check_interval: 5000
+
+experiment:
+  checkpoint_every_n_steps: 1000
+
+training_vis_frequency: 10000

@@ -1,0 +1,19 @@
+# @package _global_
+# Metrics for segmentation on COCO/VOC.
+evaluation_metrics:
+  segmentation_ari:
+    _target_: routed.ocl.metrics.ARIMetric
+    prediction_path: masks_resized
+    target_path: input.segmentation_mask
+    foreground: false
+    convert_target_one_hot: true
+  segmentation_iou:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: masks_resized
+    target_path: input.segmentation_mask
+    ignore_overlaps: true
+  segmentation_mbo:
+    _target_: routed.ocl.metrics.AverageBestOverlapMetric
+    prediction_path: masks_resized
+    target_path: input.segmentation_mask
+    ignore_overlaps: true

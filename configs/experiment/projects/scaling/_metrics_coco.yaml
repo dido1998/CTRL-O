@@ -1,0 +1,56 @@
+# @package _global_
+evaluation_metrics:
+  instance_ari:
+    _target_: routed.ocl.metrics.ARIMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    foreground: false
+    convert_target_one_hot: true
+    ignore_overlaps: true
+  instance_ari_min2:
+    _target_: routed.ocl.metrics.ARIMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    foreground: false
+    convert_target_one_hot: true
+    ignore_overlaps: true
+    min_true_classes: 2
+  instance_iou:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    use_threshold: false
+    ignore_overlaps: true
+  segmentation_iou:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.segmentation_mask
+    use_threshold: false
+  instance_mbo:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: true
+  segmentation_mbo:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.segmentation_mask
+    use_threshold: false
+    matching: best_overlap
+    ignore_overlaps: true
+  instance_recovery:
+    _target_: routed.ocl.metrics.UnsupervisedMaskIoUMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    use_threshold: false
+    matching: best_overlap
+    compute_discovery_fraction: true
+    ignore_overlaps: true
+  instance_corloc:
+    _target_: routed.ocl.metrics.MaskCorLocMetric
+    prediction_path: object_decoder.masks_as_image
+    target_path: input.instance_mask
+    use_threshold: false
+    ignore_overlaps: true

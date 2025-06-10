@@ -1,0 +1,14 @@
+# @package _global_
+# DINOSAUR with ViT-S/14 initializing the targets from a DINOSAUR finetuning checkpoint, and finetuning further.
+# The encoder weights are initialized with DINO-v2 weights.
+defaults:
+  - /experiment/projects/scaling/coco_small14_dinov2
+  - /experiment/projects/scaling/finetuning/_finetuning
+  - /experiment/projects/scaling/_model/init_target_feature_extractor
+
+experiment:
+  feature_extractor_checkpoint_path: ${oc.env:CHECKPOINT_PREFIX}/dinosaur_coco_small14_dinov2_finetuned_300k.ckpt
+
+models:
+  target_feature_extractor:
+    dynamic_img_size: true

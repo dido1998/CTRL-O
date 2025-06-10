@@ -1,0 +1,9 @@
+# @package _global_
+# Settings for training without epochs.
+
+trainer:
+  max_epochs: -1
+  check_val_every_n_epoch: null
+
+dataset:
+  use_epochs: false

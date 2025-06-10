@@ -1,0 +1,132 @@
+# @package _global_
+# Add masking to ViT feature extractor, use unmasked target feature extractor.
+defaults:
+  - /experiment/projects/scaling/dual_controllable_coco_small14_dinov2
+  - /experiment/projects/scaling/mapping/mlp_mapping
+  - /experiment/projects/scaling/_opt/dual_conditioning/mapping_with_probes_dec_conditioning
+  - _self_
+
+models:
+  dual_conditioning:
+    _target_: routed.ocl.conditioning.DualConditioning
+    n_slots: ${experiment.num_slots}
+    object_dim: ${experiment.slot_dim}
+    dual_conditioning: false
+    name_embedding_path: input.name_embedding
+    point_embedding_path: input.bbox_centroids
+    batch_size_path: input.batch_size
+    mask_path: input.contrastive_loss_mask
+
+  concat_features:
+    _target_: routed.ocl.nn_utils.ConcatFeatures
+    x1_path: feature_extractor
+    x2_path: mapping
+
+  #dual_conditioning:
+  #  _target_: routed.ocl.conditioning.RandomConditioning
+  #  n_slots: ${experiment.num_slots}
+  #  object_dim: ${experiment.slot_dim}
+  #  batch_size_path: input.batch_size
+
+  perceptual_grouping:
+      _target_: routed.ocl.perceptual_grouping.ControllableSlotAttentionGrouping
+      feature_dim: "${mul: ${experiment.feature_dim}, 2}"
+      object_dim: ${experiment.slot_dim}
+      use_projection_bias: false
+      positional_embedding:
+        _target_: ocl.neural_networks.wrappers.Sequential
+        _args_:
+          - _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+          - _target_: ocl.neural_networks.build_two_layer_mlp
+            input_dim: "${mul: ${experiment.feature_dim}, 2}"
+            output_dim: "${mul: ${experiment.feature_dim}, 2}"
+            hidden_dim: "${mul: ${experiment.feature_dim}, 4}"
+            initial_layer_norm: true
+      ff_mlp:
+        _target_: ocl.neural_networks.build_two_layer_mlp
+        input_dim: ${..object_dim}
+        output_dim: ${..object_dim}
+        hidden_dim: "${mul: ${..object_dim}, 4}"
+        initial_layer_norm: true
+        residual: true
+      dual_conditioning: false
+      feature_path: concat_features
+      conditioning_path: conditioning
+      dual_conditioning_path: dual_conditioning
+
+  dec_conditioning:
+    _target_: routed.ocl.decoder_conditioning.EncodeDualConditioning
+    dim: ${experiment.slot_dim}
+    language_path: input.name_embedding
+    point_path: input.bbox_centroids
+    mask_path: input.contrastive_loss_mask
+
+  object_decoder:
+    _target_: routed.ocl.decoding.ControllablePatchDecoder
+    decoder:
+      _target_: ocl.neural_networks.build_mlp
+      _partial_: true
+      features: [2048, 2048, 2048]
+    object_dim: ${experiment.slot_dim}
+    output_dim: ${experiment.feature_dim}
+    num_patches: ${experiment.num_patches}
+    object_features_path: perceptual_grouping.objects
+    dual_object_features_path: perceptual_grouping.dual_objects
+    image_path: input.image
+    dual_condition_info_path: dec_conditioning
+
+
+  category_head:
+    _target_: routed.ocl.heads.CategoryPredictionHead
+    dim: ${experiment.feature_dim}
+    num_classes: 172
+    attn_path: perceptual_grouping.dual_feature_attributions
+    x_path: mapping.features
+
+  point_head:
+    _target_: routed.ocl.heads.PointPredictionHead
+    dim: ${experiment.feature_dim}
+    attn_path: perceptual_grouping.dual_feature_attributions
+    x_path: mapping.features
+
+losses:
+  point_prediction:
+    _target_: routed.ocl.losses.PointPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    point_preds_path: point_head
+    target_path: input.bbox_centroids
+    control_mask_path: input.selected_indices
+  category_prediction:
+    _target_: routed.ocl.losses.CategoryPredictionLoss
+    weight: 1.0
+    iter_start: 0
+    category_preds_path: category_head
+    target_path: input.category_idx
+    control_mask_path: input.selected_indices
+
+evaluation_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices
+
+training_metrics:
+  category_acc:
+    _target_: routed.ocl.metrics.AccMetric
+    pred_path: category_head
+    target_path: input.category_idx
+    num_classes: 172
+    selected_indices_path: input.selected_indices
+  mse:
+    _target_: routed.ocl.metrics.MSEMetric
+    pred_path: point_head
+    target_path: input.bbox_centroids
+    selected_indices_path: input.selected_indices

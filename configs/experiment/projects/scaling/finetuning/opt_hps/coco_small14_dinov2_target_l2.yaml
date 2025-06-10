@@ -1,0 +1,12 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, regularizing features by predicting target features.
+defaults:
+  - /experiment/projects/scaling/finetuning/reg/coco_small14_dinov2_target_l2
+  - /experiment/projects/scaling/finetuning/opt_hps/_settings
+
+experiment:
+  target_l2_weight: 1.0
+
+losses:
+  feature_l2_reg:
+    weight: ${experiment.target_l2_weight}

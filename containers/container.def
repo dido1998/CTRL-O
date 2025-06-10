@@ -1,0 +1,72 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%files
+    ../pyproject.toml /deps/ocl/pyproject.toml
+    ../poetry.lock /deps/ocl/poetry.lock
+
+%environment
+    export VIRTUAL_ENV=/venv
+
+%post
+    # setup environment
+    export POETRY_VERSION=1.8.2
+    export POETRY_HOME="/opt/poetry"
+    export POETRY_NO_INTERACTION=1
+    export POETRY_VIRTUALENVS_CREATE=false
+    export VIRTUAL_ENV=/venv
+    export SSH_AUTH_SOCK={{ SSH_AUTH_SOCK }}  # forward ssh agent from build host
+    export PATH="$POETRY_HOME/bin:$VIRTUAL_ENV/bin:$PATH"
+    echo "export PATH=\"$VIRTUAL_ENV/bin:\$PATH\"" >> $SINGULARITY_ENVIRONMENT
+
+    # install packages
+    apt-get update
+    apt-get install -y \
+        python3.11-dev \
+        python3.11-venv \
+        python3-pip \
+        git \
+        curl
+
+    # install poetry
+    curl -sSL https://install.python-poetry.org | python3.11 -
+
+    # clone dependencies
+    mkdir ~/.ssh && touch ~/.ssh/known_hosts
+    ssh-keygen -F github.com || ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    git clone git@github.com:martius-lab/cluster_utils.git /deps/cluster_utils
+
+    # create virtual env
+    python3.11 -m venv $VIRTUAL_ENV
+
+    # install python dependencies of project
+    cd /deps/ocl/
+    poetry install --compile --only main --no-root -E timm -E mpi_cluster
+    cd /deps/cluster_utils
+    python3.11 -m pip install --compile .
+
+    # cleanup
+    cd /deps/ocl/
+    poetry cache clear --all .
+    python3.11 -m pip cache purge
+    apt-get clean
+
+    rm -r /deps
+    rm -r $POETRY_HOME
+
+%test
+    # test if everything is installed correctly and imports work
+    echo "PATH: $PATH"
+    echo "Path to Python: `which python3`"
+    echo "Python version: `python3 --version`"
+    python3 -c 'import torch; print(f"Torch version: {torch.__version__}")'
+    python3 -c 'import cluster_utils'
+
+%help
+    Command to build:
+
+    apptainer build --build-arg SSH_AUTH_SOCK=$SSH_AUTH_SOCK container.sif container.def
+
+    If $SSH_AUTH_SOCK is not in /tmp, then the folder where $SSH_AUTH_SOCK is in needs to be
+    mounted in the container during build: Add '--bind `dirname $SSH_AUTH_SOCK`'.

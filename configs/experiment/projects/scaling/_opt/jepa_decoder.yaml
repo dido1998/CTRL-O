@@ -1,0 +1,10 @@
+# @package _global_
+# Add optimizer group for JEPA decoder.
+optimizers:
+  opt0:
+    parameter_groups:
+      param_groups:
+        jepa_decoder:
+          params: [models.jepa_decoder]
+          lr: ${experiment.total_lr}
+          weight_decay: 0.0

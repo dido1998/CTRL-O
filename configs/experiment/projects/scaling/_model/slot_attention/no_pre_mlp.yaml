@@ -1,0 +1,8 @@
+# @package _global_
+# Disable pre-SA MLP.
+models:
+  perceptual_grouping:
+    feature_dim: ${experiment.feature_dim}
+    positional_embedding:
+      _target_: ocl.neural_networks.positional_embedding.DummyPositionEmbed
+      _args_: []

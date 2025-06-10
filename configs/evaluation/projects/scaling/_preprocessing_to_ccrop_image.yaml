@@ -1,0 +1,24 @@
+# @package _global_
+# Change eval image to center crop
+
+dataset:
+  eval_transforms:
+    03b_preprocessing:
+      transforms:
+        image:
+          _target_: torchvision.transforms.Compose
+          transforms:
+            - "${lambda_fn:'lambda image: image.copy()'}"
+            - _target_: torchvision.transforms.v2.ToImage
+            #- _target_: torchvision.transforms.v2.Resize
+            #  size: ${experiment.image_size}
+            #  interpolation: ${torchvision_interpolation_mode:BICUBIC}
+            #  antialias: true
+            #- _target_: torchvision.transforms.CenterCrop
+            #  size: ${experiment.image_size}
+            - _target_: torchvision.transforms.v2.ToDtype
+              dtype: ${torch_dtype:float32}
+              scale: true
+            - _target_: torchvision.transforms.Normalize
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]

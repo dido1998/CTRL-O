@@ -1,0 +1,9 @@
+# @package _global_
+# Add finetuning of the ViT feature extractor against a frozen pretrained feature extractor.
+defaults:
+  - /experiment/projects/scaling/_model/target_feature_extractor
+  - /experiment/projects/scaling/finetuning/_metrics
+
+models:
+  feature_extractor:
+    freeze: false

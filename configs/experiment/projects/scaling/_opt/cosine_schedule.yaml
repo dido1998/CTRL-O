@@ -1,0 +1,10 @@
+# @package _global_
+# Cosine learning rate scheduler.
+optimizers:
+  opt0:
+    lr_scheduler:
+      _target_: ocl.scheduling.cosine_annealing_with_optional_warmup
+      _partial_: true
+      T_max: ${trainer.max_steps}
+      eta_min: 0.000001
+      warmup_steps: 10000

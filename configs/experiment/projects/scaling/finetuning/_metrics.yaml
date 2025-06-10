@@ -1,0 +1,22 @@
+# @package _global_
+# Metrics useful during finetuning.
+evaluation_metrics:
+  # feature_target_mse:
+  #   _target_: routed.ocl.metrics.TwoTensorStatistic
+  #   reduction: mse
+  #   tensor1_path: feature_extractor.features
+  #   tensor2_path: target_feature_extractor.features
+  feature_rankme:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: matrix_rank_soft
+    num_batch_dimensions: 2
+    batch_aggregation: true
+    num_aggregation_samples: "${mul: 64, ${experiment.num_patches}, 8}"
+    tensor_path: feature_extractor.features
+  slot_rankme:
+    _target_: routed.ocl.metrics.TensorStatistic
+    reduction: matrix_rank_soft
+    num_batch_dimensions: 2
+    batch_aggregation: true
+    num_aggregation_samples: "${mul: 64, ${experiment.num_slots}, 16}"
+    tensor_path: perceptual_grouping.objects

@@ -1,0 +1,5 @@
+# @package _global_
+# DINOSAUR with finetuning of ViT encoder, regularizing features towards target features.
+defaults:
+  - /experiment/projects/scaling/finetuning/entityseg_small14_dinov2
+  - /experiment/projects/scaling/finetuning/reg/_target_l2

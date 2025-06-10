@@ -1,0 +1,10 @@
+# @package _global_
+# Add regularizer pulling finetuned features towards target features.
+defaults:
+  - /experiment/projects/scaling/finetuning/reg/_target_l2
+
+losses:
+  feature_l2_reg:
+    _target_: routed.ocl.losses.MaskedReconstructionLoss
+    index_dim: 1
+    indices_path: feature_extractor.aux_features.mask_indices_keep
