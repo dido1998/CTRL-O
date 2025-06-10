@@ -8,7 +8,7 @@
 
 Our code is based on the [Object Centric Learning Framwork](https://github.com/amazon-science/object-centric-learning-framework)
 
-# Object Centric Learning Framework (OCLF)
+## Object Centric Learning Framework (OCLF)
 
 [![Linting and Testing Status](https://github.com/amazon-science/object-centric-learning-framework/actions/workflows/lint_and_test.yaml/badge.svg?branch=main)](https://github.com/amazon-science/object-centric-learning-framework/actions/workflows/lint_and_test.yaml)
 [![Docs site](https://img.shields.io/badge/docs-GitHub_Pages-blue)](https://amazon-science.github.io/object-centric-learning-framework/)
@@ -73,7 +73,7 @@ bash download_and_convert.sh COCO
 
 This should create a webdataset in the path `scripts/datasets/outputs/coco`.
 
-To run the experiments, th dataset needs to be exposed to OCLF
+To run the experiments, the dataset needs to be exposed to OCLF
 
 ```bash
 cd ../..   # Go back to root folder
