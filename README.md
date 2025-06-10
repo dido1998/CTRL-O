@@ -110,7 +110,7 @@ poetry run python ocl/cli/inference.py
 We provide a pretrained CTRL-O model on Hugging Face. You can download it using the following command:
 
 ```bash
-huggingface-cli download rabiulawal/ctrlo --local-dir pretrained_models/ctrlo --local-dir-use-symlinks False
+huggingface-cli download adidolkar123/pretrained_coco_vgcoco --local-dir pretrained_models/ctrlo --local-dir-use-symlinks False
 ```
 
 This will download the model checkpoint and configuration file into the `pretrained_models/ctrlo` directory. After downloading, please update the paths in `ocl/cli/inference.py` to point to the downloaded files.
