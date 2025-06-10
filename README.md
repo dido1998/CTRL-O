@@ -117,7 +117,7 @@ This will download the model checkpoint and configuration file into the `pretrai
 
 ## Citation
 
-If you CTRL-O in your work please cite the bibtex entry below
+If you use CTRL-O in your work please cite the bibtex entry below
 
 ```bibtex
 @inproceedings{didolkar2025ctrlo,
