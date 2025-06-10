@@ -36,8 +36,12 @@ Installing OCLF requires at least python3.8. Installation can be done using
 `poetry`, check out the repo and setup a development environment:
 
 ```bash
-git clone https://github.com/amazon-science/object-centric-learning-framework.git
-cd object-centric-learning-framework
+git clone git@github.com:dido1998/CTRL-O.git
+cd CTRL-O
+# check poetry config: `poetry config --list`
+# change venv location (default is project root /venv): `poetry config virtualenvs.path /your/custom/path`
+poetry self update
+pip install --upgrade pip
 poetry install
 ```
 
@@ -53,7 +57,7 @@ to install the dependencies needed for dataset conversion and creation.
 We provide pre-curated datasets for training CTRL-O.
 
 1. VG + COCO: https://huggingface.co/adidolkar123/visual_genome_coco
-2. VG: https://huggingface.co/adidolkar123/visual_genome/tree/main
+2. VG: https://huggingface.co/adidolkar123/visual_genome/
 
 To download these datasets use:
 
@@ -128,7 +132,11 @@ If you CTRL-O in your work please cite the bibtex entry below
 }
 ```
 
+## Acknowledgements
 
+This project is a fork of the [Object Centric Learning Framework (OCLF)](https://github.com/amazon-science/object-centric-learning-framework)
+by Max Horn, Maximilian Seitzer, Andrii Zadaianchuk, Zixu Zhao, Dominik Zietlow, Florian Wenzel, and Tianjun Xiao.
 
-## License
-This project is licensed under the Apache-2.0 License.
+CTRL-O extends OCLF by introducing language-based control for object-centric representation learning, enabling specific object targeting and multimodal applications.
+
+Original project is licensed under Apache-2.0.
