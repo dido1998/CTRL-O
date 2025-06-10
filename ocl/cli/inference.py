@@ -29,8 +29,8 @@ logging.getLogger().setLevel(logging.INFO)
 
 # TODO: Use CVPR submission checkpoints --- these checkpoints are recent I suppose
 CHECKPOINTS = {
-    "checkpoint": "/home/mila/a/aniket.didolkar/scratch/ctrlo_github_release/language_conditioned_oclf/outputs/projects/prompting/vg/prompt_vg_small14_dinov2_mapping_lang_point_pred_sep/2025-06-09_22-58-50/checkpoints/epoch=0-step=71000.ckpt",
-    "config": "/home/mila/a/aniket.didolkar/scratch/ctrlo_github_release/language_conditioned_oclf/outputs/projects/prompting/vg/prompt_vg_small14_dinov2_mapping_lang_point_pred_sep/2025-06-09_22-58-50/config/config.yaml",
+    "checkpoint": "pretrained_models/ctrlo/pretrained_model.ckpt",
+    "config": "pretrained_models/ctrlo/config.yaml",
 }
 
 
